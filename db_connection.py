@@ -1,14 +1,18 @@
 import sqlite3
 
 try:
-    sqlite_connection = sqlite3.connect('sqlite_python.db')
+    sqlite_connection = sqlite3.connect('db.sqlite')
+    sqlite_create_table_query = '''CREATE TABLE sales_plan (
+                                    id TEXT PRIMARY KEY,
+                                    plan INTEGER NOT NULL
+                                );'''
+    
     cursor = sqlite_connection.cursor()
     print("База данных создана и успешно подключена к SQLite")
-
-    sqlite_select_query = "select sqlite_version();"
-    cursor.execute(sqlite_select_query)
-    record = cursor.fetchall()
-    print("Версия базы данных SQLite: ", record)
+    cursor.execute(sqlite_create_table_query)
+    sqlite_connection.commit()
+    print("Таблица создана")
+    
     cursor.close()
 
 except sqlite3.Error as error:
