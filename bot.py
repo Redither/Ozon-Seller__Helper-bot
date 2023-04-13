@@ -4,8 +4,6 @@ import asyncio
 import os
 from datetime import datetime
 import calendar
-import requests
-import json
 
 from dotenv import load_dotenv
 dotenv_path = os.path.join(os.path.dirname(__file__), '.env')
@@ -20,6 +18,13 @@ CHAT = os.environ.get('CHAT_ID')
 bot = Bot(token=TOKEN)
 dp = Dispatcher(bot=bot)
 
+def isAdmin(id):
+    if id not in USER:
+        return True
+    else:
+        return False
+    
+
 @dp.message_handler(commands=['start'])
 async def start_handler(message: types.Message):
     # должно логать действия
@@ -28,12 +33,11 @@ async def start_handler(message: types.Message):
     user_full_name = message.from_user.full_name
     logging.info(f'{user_id} {user_full_name} {time.asctime()}')
 
-    if str(message.from_user.id) not in USER:
-        await message.reply(f"Пошел нахуй, {user_full_name}!")
+    if isAdmin(message.from_user.id):
+        await message.reply(f"Недостаточно прав!")
         return
-
     else:
-        await message.reply(f"Добро пожаловть, {user_full_name}!")
+        await message.reply(f"Здравствуйте!\n Я Ваш персональный бот-аналитик для работы с __**OZON!**__\n Для получения сводки введите /svodka\n Чтобы ввести/изменить план продаж введите /plan ")
 
 @dp.message_handler(commands=['svodka'])
 async def svodka_handler(message: types.Message):
