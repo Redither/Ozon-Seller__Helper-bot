@@ -1,9 +1,10 @@
 import time
 import logging
-import asyncio
+import re
 import os
 from datetime import datetime
 import calendar
+import db_connection
 
 from dotenv import load_dotenv
 dotenv_path = os.path.join(os.path.dirname(__file__), '.env')
@@ -18,13 +19,6 @@ CHAT = os.environ.get('CHAT_ID')
 bot = Bot(token=TOKEN)
 dp = Dispatcher(bot=bot)
 
-def isAdmin(id):
-    if id not in USER:
-        return True
-    else:
-        return False
-    
-
 @dp.message_handler(commands=['start'])
 async def start_handler(message: types.Message):
     # должно логать действия
@@ -33,7 +27,7 @@ async def start_handler(message: types.Message):
     user_full_name = message.from_user.full_name
     logging.info(f'{user_id} {user_full_name} {time.asctime()}')
 
-    if isAdmin(message.from_user.id):
+    if str(message.from_user.id) != USER:
         await message.reply(f"Недостаточно прав!")
         return
     else:
@@ -65,6 +59,23 @@ async def svodka_handler(message: types.Message):
         "offset": 0
     }
     await message.reply(f'{today} + {type(today)}, {first_day} + {type(first_day)}, {last_day} + {type(last_day)}')
+
+@dp.message_handler(commands=['plan'])
+async def plan_handler(message: types.Message):
+    if str(message.from_user.id) != USER:
+        await message.reply(f"Недостаточно прав!")
+        return
+    else:
+        if not message.get_args():
+            await message.reply("Для того, чтобы ввести или изменить план продаж на месяц, отправьте сообщение:\n /plan ГГГГ-ММ СУММА \n\n Пример:\n\n /plan 2023-04 2000000\n\n\nПримечание: Изменить план продаж может только директор!")
+        else:
+            if not re.fullmatch('\d\d\d\d\D\d\d \d+', message.get_args()):
+                await message.reply("Данные введены некорректно! Попробуйте снова!")
+            else:
+                id, plan = message.get_args().split()
+                id = re.compile('\D').sub('-', id)
+                db_connection.add_sales_plan(id, plan)
+                await message.reply(f"Данные сохранены!\n На месяц {id} установлен план {plan}")
 
 
 if __name__ == "__main__":
