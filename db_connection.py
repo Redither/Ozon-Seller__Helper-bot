@@ -22,5 +22,4 @@ def add_sales_plan(id, plan):
         if (sqlite_connection):
             sqlite_connection.close()
             print("Соединение с SQLite закрыто")
-
-add_sales_plan("2023-02", 2500000)
+            
