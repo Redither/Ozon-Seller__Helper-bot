@@ -33,14 +33,14 @@ async def start_handler(message: types.Message):
     else:
         await message.reply(f"Здравствуйте!\n Я Ваш персональный бот-аналитик для работы с __**OZON!**__\n Для получения сводки введите /svodka\n Чтобы ввести/изменить план продаж введите /plan ")
 
-@dp.message_handler(commands=['svodka'])
+@dp.message_handler(commands=['statistic'])
 async def svodka_handler(message: types.Message):
     today = datetime.now().date()
     first_day = today.replace(day=1)
-    last_day = today.replace(day = calendar.monthrange(2023, 4)[1])
+    last_day = first_day.replace(day = calendar.monthrange(2023, 4)[1])
     REQUEST = {
-        "date_from": first_day.strftime('%Y-%M-%D'),
-        "date_to": last_day.strftime('%Y-%M-%D'),
+        "date_from": first_day.strftime('%Y-%m-%D'),
+        "date_to": last_day.strftime('%Y-%m-%D'),
         "metrics": [
             "revenue"
         ],
@@ -58,7 +58,12 @@ async def svodka_handler(message: types.Message):
         "limit": 1000,
         "offset": 0
     }
-    await message.reply(f'{today} + {type(today)}, {first_day} + {type(first_day)}, {last_day} + {type(last_day)}')
+    total = 865342
+    plan = db_connection.get_sales_plan(today.strftime('%Y-%m'))
+    if type(plan) != int:
+        await message.reply('Не указан план продаж на этот месяц!')
+    else:
+        await message.reply(f'Данные по статистике на {today}:\n{today}\{first_day}\{last_day}\nВыручка общая: {total}/{plan}/{total/plan*100}%\n\nТоп-5 по продажам:\nтут будет топ\n\nТоп-5 по обороту:\nтут будет топ\n\nТоп-3 по возвратам:\nтут будет топ\n\n')
 
 @dp.message_handler(commands=['plan'])
 async def plan_handler(message: types.Message):
@@ -76,7 +81,6 @@ async def plan_handler(message: types.Message):
                 id = re.compile('\D').sub('-', id)
                 db_connection.add_sales_plan(id, plan)
                 await message.reply(f"Данные сохранены!\n На месяц {id} установлен план {plan}")
-
 
 if __name__ == "__main__":
     executor.start_polling(dp)
