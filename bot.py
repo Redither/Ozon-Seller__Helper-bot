@@ -5,6 +5,7 @@ import os
 from datetime import datetime
 import calendar
 import db_connection
+import api_connection
 
 from dotenv import load_dotenv
 dotenv_path = os.path.join(os.path.dirname(__file__), '.env')
@@ -38,32 +39,22 @@ async def svodka_handler(message: types.Message):
     today = datetime.now().date()
     first_day = today.replace(day=1)
     last_day = first_day.replace(day = calendar.monthrange(2023, 4)[1])
-    REQUEST = {
-        "date_from": first_day.strftime('%Y-%m-%D'),
-        "date_to": last_day.strftime('%Y-%m-%D'),
-        "metrics": [
-            "revenue"
-        ],
-        "dimension": [
-            "day",
-            "month"
-        ],
-        "filters": [ ],
-        "sort": [
-            {
-                "key": "revenue",
-                "order": "DESC"
-            }
-        ],
-        "limit": 1000,
-        "offset": 0
-    }
     total = 865342
     plan = db_connection.get_sales_plan(today.strftime('%Y-%m'))
     if type(plan) != int:
         await message.reply('Не указан план продаж на этот месяц!')
     else:
-        await message.reply(f'Данные по статистике на {today}:\n{today}\{first_day}\{last_day}\nВыручка общая: {total}/{plan}/{total/plan*100}%\n\nТоп-5 по продажам:\nтут будет топ\n\nТоп-5 по обороту:\nтут будет топ\n\nТоп-3 по возвратам:\nтут будет топ\n\n')
+        result = api_connection.get_sales()
+        total = result['totals'][0]
+        data = result['data'][0:5]
+        top_sales = ""
+        for element in data:
+            name = element['dimensions'][0]['name']
+            num = element['metrics'][1]
+            sum = element['metrics'][0]
+            top_sales += (f'{name}\nПродано {num} штук на {sum} рублей\n')
+
+        await message.reply(f'Данные по статистике на {today}:\n\nВыручка общая: {total}/{plan}/{total/plan*100}%\n\nТоп-5 по продажам:\n{top_sales}\n\nТоп-5 по обороту:\nтут будет топ\n\nТоп-3 по возвратам:\nтут будет топ\n\n')
 
 @dp.message_handler(commands=['plan'])
 async def plan_handler(message: types.Message):
