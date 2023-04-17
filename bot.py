@@ -94,7 +94,7 @@ async def statistic_handler(message: types.Message):
                 num = element['metrics'][1]
                 sum = element['metrics'][0]
                 top_sales += (f'{name}\nПродано {num} штук на {sum} рублей\n\n')
-            await message.reply(f'Данные по статистике на {today}:\n\nВыручка общая: {total}/{plan}/{total/plan*100}%\n\nТоп-5 по продажам:\n{top_sales}\n\n')
+            await message.reply(f'Данные по статистике на {today}:\n\nВыручка общая: {total}/{plan}/{round(total/plan*100, 2)}%\n\nТоп-5 по продажам:\n{top_sales}\n\n')
 
 
 @dp.message_handler(commands=['plan'])
