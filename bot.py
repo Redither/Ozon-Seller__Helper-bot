@@ -32,7 +32,7 @@ async def start_handler(message: types.Message):
         await message.reply(f"Недостаточно прав!")
         return
     else:
-        await message.reply(f"Здравствуйте!\n Я Ваш персональный бот-аналитик для работы с __**OZON!**__\n Для получения сводки введите /svodka\n Чтобы ввести/изменить план продаж введите /plan ")
+        await message.reply(f"Здравствуйте!\n Я Ваш персональный бот-аналитик для работы с **OZON!**\n Для получения статистики введите /statistic\n Чтобы ввести/изменить план продаж, введите /plan ")
 
 @dp.message_handler(commands=['statistic'])
 async def svodka_handler(message: types.Message):
@@ -52,9 +52,9 @@ async def svodka_handler(message: types.Message):
             name = element['dimensions'][0]['name']
             num = element['metrics'][1]
             sum = element['metrics'][0]
-            top_sales += (f'{name}\nПродано {num} штук на {sum} рублей\n')
+            top_sales += (f'{name}\nПродано {num} штук на {sum} рублей\n\n')
 
-        await message.reply(f'Данные по статистике на {today}:\n\nВыручка общая: {total}/{plan}/{total/plan*100}%\n\nТоп-5 по продажам:\n{top_sales}\n\nТоп-5 по обороту:\nтут будет топ\n\nТоп-3 по возвратам:\nтут будет топ\n\n')
+        await message.reply(f'Данные по статистике на {today}:\n\nВыручка общая: {total}/{plan}/{total/plan*100}%\n\nТоп-5 по продажам:\n{top_sales}\n\n')
 
 @dp.message_handler(commands=['plan'])
 async def plan_handler(message: types.Message):
