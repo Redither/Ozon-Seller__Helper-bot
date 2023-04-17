@@ -17,6 +17,10 @@ from aiogram import Bot, Dispatcher, executor, types
 TOKEN = os.environ.get('TOKEN')
 USER = os.environ.get('USER_ID')
 CHAT = os.environ.get('CHAT_ID')
+
+PARAM_UNMUTE = db_connection.get_setting_value('UNMUTE')
+PARAM_TIME = db_connection.get_setting_value('time')
+
 bot = Bot(token=TOKEN)
 dp = Dispatcher(bot=bot)
 
@@ -73,5 +77,36 @@ async def plan_handler(message: types.Message):
                 db_connection.add_sales_plan(id, plan)
                 await message.reply(f"Данные сохранены!\n На месяц {id} установлен план {plan}")
 
+@dp.message_handler(commands=['speak'])
+async def plan_handler(message: types.Message):
+    if str(message.from_user.id) != USER:
+        await message.reply(f"Недостаточно прав!")
+        return
+    else:
+        if PARAM_UNMUTE == "True":
+            db_connection.change_settings("UNMUTE", "False")
+            await message.reply("Ежедневное сообщение отключено")
+        else:
+            db_connection.change_settings("UNMUTE", "True")
+            await message.reply("Ежедневное сообщение включено")
+
+@dp.message_handler(commands=['message'])
+async def plan_handler(message: types.Message):
+    if str(message.from_user.id) != USER:
+        await message.reply(f"Недостаточно прав!")
+        return
+    else:
+        if not message.get_args():
+            await message.reply("Для того, чтобы изменить время оповещения о статистике, отправьте сообщение:\n /message ЧЧ:ММ \n\n Пример:\n\n /message 09:00\n\n\nПримечание: Изменить план продаж может только директор!")
+        else:
+            if not re.fullmatch('\d\d\D\d\d', message.get_args()):
+                await message.reply("Данные введены некорректно! Попробуйте снова!")
+            else:
+                value = message.get_args().split()
+                value = re.compile('\D').sub(':', id)
+                db_connection.add_sales_plan("time", value)
+                
+                await message.reply(f"Данные сохранены!\n Теперь сообщения будут отсылаться в {value}")
+        
 if __name__ == "__main__":
     executor.start_polling(dp)
