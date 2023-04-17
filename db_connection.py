@@ -70,12 +70,12 @@ def get_setting_value(id):
         cursor = sqlite_connection.cursor()
         print("Подключено к SQLite")
 
-        sqlite_get_with_param = '''SELECT plan FROM bot_settings WHERE id = ?;'''
+        sqlite_get_with_param = '''SELECT value FROM bot_settings WHERE id = ?;'''
     
-        plan = cursor.execute(sqlite_get_with_param, [id]).fetchone()[0]
+        value = cursor.execute(sqlite_get_with_param, [id]).fetchone()[0]
         print("Данные получены")
         cursor.close()
-        return plan
+        return value
 
     except sqlite3.Error as error:
         print("Ошибка при подключении к sqlite", error)
