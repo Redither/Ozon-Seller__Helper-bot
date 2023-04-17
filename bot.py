@@ -41,7 +41,7 @@ async def send_statistic(bot: Bot):
     # last_day = first_day.replace(day = calendar.monthrange(2023, 4)[1])
     try:
         plan = db_connection.get_sales_plan(today.strftime('%Y-%m'))
-    except:
+    except TypeError:
         print('План не введен или данные не действительны')
         await bot.send_message(CHAT, f'Не указан план продаж на этот месяц!')
         plan = 0
@@ -94,7 +94,7 @@ async def statistic_handler(message: types.Message):
                 num = element['metrics'][1]
                 sum = element['metrics'][0]
                 top_sales += (f'{name}\nПродано {num} штук на {sum} рублей\n\n')
-        await message.reply(f'Данные по статистике на {today}:\n\nВыручка общая: {total}/{plan}/{total/plan*100}%\n\nТоп-5 по продажам:\n{top_sales}\n\n')
+            await message.reply(f'Данные по статистике на {today}:\n\nВыручка общая: {total}/{plan}/{total/plan*100}%\n\nТоп-5 по продажам:\n{top_sales}\n\n')
 
 
 @dp.message_handler(commands=['plan'])
