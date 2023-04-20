@@ -85,15 +85,15 @@ async def statistic_handler(message: types.Message):
         if type(plan) != int:
             await message.reply('Не указан план продаж на этот месяц!')
         else:
-            result = api_connection.get_sales()
+            result = api_connection.get_sales_month()
             total = result['totals'][0]
             data = result['data'][0:5]
             top_sales = ""
             for element in data:
                 name = element['dimensions'][0]['name']
                 num = element['metrics'][1]
-                sum = element['metrics'][0]
-                top_sales += (f'{name}\nПродано {num} штук на {sum} рублей\n\n')
+                # sum = element['metrics'][0]
+                top_sales += (f'{name}\n1M {num} ()% 1D ... ()%\n\n')
             await message.reply(f'Данные по статистике на {today}:\n\nВыручка общая: {total}/{plan}/{round(total/plan*100, 2)}%\n\nТоп-5 по продажам:\n{top_sales}\n\n')
 
 
