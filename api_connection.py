@@ -1,18 +1,34 @@
 from urllib import request
 import json
 import os
-from datetime import datetime
+from datetime import datetime, timedelta
 
 from dotenv import load_dotenv
 dotenv_path = os.path.join(os.path.dirname(__file__), '.env')
 if os.path.exists(dotenv_path):
     load_dotenv(dotenv_path)
 
+
 SELLER = os.environ.get('CLIENT_ID')
 KEY = os.environ.get('API_KEY')
 
-today = str(datetime.now().date())
-first_day = str(datetime.now().date().replace(day=1))
+
+last_month = datetime.today().month -1
+if last_month < 1:
+    last_month = 12
+else:
+    last_month = last_month
+
+today = datetime.now().date()
+today_of_prev_month = datetime.today().replace(month= last_month)
+first_day = datetime.now().date().replace(day=1)
+last_day_of_prev_month = datetime.today().replace(day=1) - timedelta(days=1)
+start_day_of_prev_month = datetime.today().replace(day=1) - timedelta(days=last_day_of_prev_month.day)
+if today.day > last_day_of_prev_month.day:
+    today_of_prev_month = last_day_of_prev_month
+else:
+    today_of_prev_month = today_of_prev_month
+
 
 url = "https://api-seller.ozon.ru/v1/analytics/data"
     # укажите заголовки запроса
@@ -26,8 +42,8 @@ headers = {
 def get_sales_month():    
     # укажите требуемые данные для создания товара в виде словаря
     request_data = {
-    "date_from": first_day,
-    "date_to": today,
+    "date_from": str(first_day),
+    "date_to": str(today),
     "metrics": [
         "revenue",
         "ordered_units"
@@ -57,8 +73,8 @@ def get_sales_month():
 
 def get_sales_today():
     request_data = {
-        "date_from": today,
-        "date_to": today,
+        "date_from": str(today),
+        "date_to": str(today),
         "metrics": [
             "revenue",
             "ordered_units"
@@ -88,15 +104,15 @@ def get_sales_today():
 def get_sales_today__last():
     # укажите требуемые данные для создания товара в виде словаря
     request_data = {
-    "date_from": first_day,
-    "date_to": today,
+    "date_from": str(today_of_prev_month),
+    "date_to": str(today_of_prev_month),
     "metrics": [
         "revenue",
         "ordered_units"
     ],
     "dimension": [
         "sku",
-        "month"
+        "day"
     ],
     "filters": [],
     "sort": [
@@ -120,8 +136,8 @@ def get_sales_today__last():
 def get_sales_month__last():    
     # укажите требуемые данные для создания товара в виде словаря
     request_data = {
-    "date_from": first_day,
-    "date_to": today,
+    "date_from": str(start_day_of_prev_month),
+    "date_to": str(today_of_prev_month),
     "metrics": [
         "revenue",
         "ordered_units"
@@ -147,3 +163,12 @@ def get_sales_month__last():
     # получите ответ в формате json
     result = json.loads(r.read().decode('utf-8'))['result']
     return result
+
+
+def find_object_by_id(data, list):
+    needed = []
+    for id in list:
+        for item in data:
+            if item['dimensions'][0]['id'] in id:
+                needed.append(item)
+    return needed
