@@ -7,6 +7,8 @@ from datetime import datetime
 import db_connection
 import api_connection
 
+from time import sleep
+
 from dotenv import load_dotenv
 dotenv_path = os.path.join(os.path.dirname(__file__), '.env')
 if os.path.exists(dotenv_path):
@@ -32,11 +34,6 @@ scheduler = AsyncIOScheduler(timezone="Europe/Moscow")
 
 async def send_statistic(bot: Bot):
     today = datetime.now().date()
-    try:
-        result = api_connection.get_sales()
-    except:
-        await bot.send_message(CHAT, f'Ошибка на стороне сервера OZON')
-    
     # first_day = today.replace(day=1)
     # last_day = first_day.replace(day = calendar.monthrange(2023, 4)[1])
     try:
@@ -45,20 +42,52 @@ async def send_statistic(bot: Bot):
         print('План не введен или данные не действительны')
         await bot.send_message(CHAT, f'Не указан план продаж на этот месяц!')
         plan = 0
+        
     if type(plan) != int:
-            await bot.send_message(CHAT, f'Не указан план продаж на этот месяц!')
-            plan = 0
+        await message.reply('Не указан план продаж на этот месяц!')
     else:
-        plan = plan
-    total = result['totals'][0]
-    data = result['data'][0:5]
-    top_sales = ""
-    for element in data:
-        name = element['dimensions'][0]['name']
-        num = element['metrics'][1]
-        sum = element['metrics'][0]
-        top_sales += (f'{name}\nПродано {num} штук на {sum} рублей\n\n')
-    await bot.send_message(CHAT, f'Данные по статистике на {today}:\n\nВыручка общая: {total}/{plan}/{round(total/plan*100, 2)}%\n\nТоп-5 по продажам:\n{top_sales}\n\n')
+        result = api_connection.get_sales_month()
+        total = result['totals'][0]
+        data = result['data'][0:5]
+        ids = []
+        for item in data:
+            ids.append(item['dimensions'][0]['id'])
+        sleep(5)
+        results_day = api_connection.find_object_by_id(api_connection.get_sales_today()['data'], ids)
+        sleep(5)
+        results_day_pm = api_connection.find_object_by_id(api_connection.get_sales_today__last()['data'], ids)
+        sleep(5)
+        results_month_pm = api_connection.find_object_by_id(api_connection.get_sales_month__last()['data'], ids)
+
+        top_sales = ""
+        for idx, element in enumerate(data):
+            name = element['dimensions'][0]['name']
+            num = int(element['metrics'][1])
+            num_d = int(results_day[idx]['metrics'][1])
+            num_lm = int(results_month_pm[idx]['metrics'][1])
+            num_ld = int(results_day_pm[idx]['metrics'][1])
+
+            growth_m = ''
+            if num_lm == 0:
+                if num == 0:
+                    growth_m = 0
+                else:
+                    growth_m = 100
+            else:
+                growth_m = round((num - num_lm)/num_lm*100, 2)
+
+            growth_d = ''
+            if num_ld == 0:
+                if num_d == 0:
+                    growth_d = 0
+                else:
+                    growth_d = 100
+            else:
+                growth_d = round((num_d - num_ld)/num_ld*100, 2)
+
+            top_sales += (f'{name}\n*1M* {num} ({growth_m})% *1D* {num_d} ({growth_d})%\n\n')
+
+        await message.reply(f'Данные по статистике на {today}:\n\nВыручка общая: {total}/{plan}/{round(total/plan*100, 2)}%\n\nТоп-5 по продажам:\n{top_sales}\n\n', parse_mode='markdown')
 
 scheduler.add_job(send_statistic, trigger='cron', hour = time_h, minute = time_m, start_date = datetime.now(), kwargs = {'bot': bot})
     
@@ -88,13 +117,44 @@ async def statistic_handler(message: types.Message):
             result = api_connection.get_sales_month()
             total = result['totals'][0]
             data = result['data'][0:5]
+            ids = []
+            for item in data:
+                ids.append(item['dimensions'][0]['id'])
+            sleep(5)
+            results_day = api_connection.find_object_by_id(api_connection.get_sales_today()['data'], ids)
+            sleep(5)
+            results_day_pm = api_connection.find_object_by_id(api_connection.get_sales_today__last()['data'], ids)
+            sleep(5)
+            results_month_pm = api_connection.find_object_by_id(api_connection.get_sales_month__last()['data'], ids)
+
             top_sales = ""
-            for element in data:
+            for idx, element in enumerate(data):
                 name = element['dimensions'][0]['name']
-                num = element['metrics'][1]
-                # sum = element['metrics'][0]
-                top_sales += (f'{name}\n1M {num} ()% 1D ... ()%\n\n')
-            await message.reply(f'Данные по статистике на {today}:\n\nВыручка общая: {total}/{plan}/{round(total/plan*100, 2)}%\n\nТоп-5 по продажам:\n{top_sales}\n\n')
+                num = int(element['metrics'][1])
+                num_d = int(results_day[idx]['metrics'][1])
+                num_lm = int(results_month_pm[idx]['metrics'][1])
+                num_ld = int(results_day_pm[idx]['metrics'][1])
+
+                growth_m = ''
+                if num_lm == 0:
+                    if num == 0:
+                        growth_m = 0
+                    else:
+                        growth_m = 100
+                else:
+                    growth_m = round((num - num_lm)/num_lm*100, 2)
+
+                growth_d = ''
+                if num_ld == 0:
+                    if num_d == 0:
+                        growth_d = 0
+                    else:
+                        growth_d = 100
+                else:
+                    growth_d = round((num_d - num_ld)/num_ld*100, 2)
+
+                top_sales += (f'{name}\n*1M* {num} ({growth_m})% *1D* {num_d} ({growth_d})%\n\n')
+            await message.reply(f'Данные по статистике на {today}:\n\nВыручка общая: {total}/{plan}/{round(total/plan*100, 2)}%\n\nТоп-5 по продажам:\n{top_sales}\n\n', parse_mode='markdown')
 
 
 @dp.message_handler(commands=['plan'])
