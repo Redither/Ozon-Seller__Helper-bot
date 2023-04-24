@@ -44,7 +44,7 @@ async def send_statistic(bot: Bot):
         plan = 0
         
     if type(plan) != int:
-        await message.reply('Не указан план продаж на этот месяц!')
+        await bot.send_message(CHAT, 'Не указан план продаж на этот месяц!')
     else:
         result = api_connection.get_sales_month()
         total = result['totals'][0]
@@ -87,7 +87,7 @@ async def send_statistic(bot: Bot):
 
             top_sales += (f'{name}\n*1M* {num} ({growth_m})% *1D* {num_d} ({growth_d})%\n\n')
 
-        await message.reply(f'Данные по статистике на {today}:\n\nВыручка общая: {total}/{plan}/{round(total/plan*100, 2)}%\n\nТоп-5 по продажам:\n{top_sales}\n\n', parse_mode='markdown')
+        await bot.send_message(CHAT, f'Данные по статистике на {today}:\n\nВыручка общая: {total}/{plan}/{round(total/plan*100, 2)}%\n\nТоп-5 по продажам:\n{top_sales}\n\n', parse_mode='markdown')
 
 scheduler.add_job(send_statistic, trigger='cron', hour = time_h, minute = time_m, start_date = datetime.now(), kwargs = {'bot': bot})
     
