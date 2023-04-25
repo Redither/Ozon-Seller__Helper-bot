@@ -8,7 +8,9 @@ dotenv_path = os.path.join(os.path.dirname(__file__), '.env')
 if os.path.exists(dotenv_path):
     load_dotenv(dotenv_path)
 
+from retrying import retry
 
+        
 SELLER = os.environ.get('CLIENT_ID')
 KEY = os.environ.get('API_KEY')
 
@@ -39,6 +41,7 @@ headers = {
     "Api-Key": KEY
 }
 
+@retry(stop_max_attempt_number=5, wait_fixed=5000)
 def get_sales_month():    
     # укажите требуемые данные для создания товара в виде словаря
     request_data = {
@@ -64,13 +67,20 @@ def get_sales_month():
     }
 
     data = json.dumps(request_data).encode('utf-8')
-    req = request.Request(url, headers=headers, data=data, method="POST")
-    r = request.urlopen(req)
-    # получите ответ в формате json
-    result = json.loads(r.read().decode('utf-8'))['result']
-    return result
+    try:
+        req = request.Request(url, headers=headers, data=data, method="POST")
+        r = request.urlopen(req)
+        # получите ответ в формате json
+        result = json.loads(r.read().decode('utf-8'))['result']
+        return result
+    except request.HTTPError as e:
+        if e.response.status_code == 429:
+          print("Сервер вернул ошибку 429: слишком много запросов")
+          raise e  # повторяем попытку выполнения запроса
+        else:
+          raise  # пробрасываем ошибку дальше
 
-
+@retry(stop_max_attempt_number=5, wait_fixed=5000)
 def get_sales_today():
     request_data = {
         "date_from": str(today),
@@ -94,13 +104,20 @@ def get_sales_today():
         "offset": 0
     }
     data = json.dumps(request_data).encode('utf-8')
-    req = request.Request(url, headers=headers, data=data, method="POST")
-    r = request.urlopen(req)
-    # получите ответ в формате json
-    result = json.loads(r.read().decode('utf-8'))['result']
-    return result
+    try:
+        req = request.Request(url, headers=headers, data=data, method="POST")
+        r = request.urlopen(req)
+        # получите ответ в формате json
+        result = json.loads(r.read().decode('utf-8'))['result']
+        return result
+    except request.HTTPError as e:
+        if e.response.status_code == 429:
+          print("Сервер вернул ошибку 429: слишком много запросов")
+          raise e  # повторяем попытку выполнения запроса
+        else:
+          raise  # пробрасываем ошибку дальше
 
-
+@retry(stop_max_attempt_number=5, wait_fixed=5000)
 def get_sales_today__last():
     # укажите требуемые данные для создания товара в виде словаря
     request_data = {
@@ -126,13 +143,20 @@ def get_sales_today__last():
     }
 
     data = json.dumps(request_data).encode('utf-8')
-    req = request.Request(url, headers=headers, data=data, method="POST")
-    r = request.urlopen(req)
-    # получите ответ в формате json
-    result = json.loads(r.read().decode('utf-8'))['result']
-    return result
+    try:
+        req = request.Request(url, headers=headers, data=data, method="POST")
+        r = request.urlopen(req)
+        # получите ответ в формате json
+        result = json.loads(r.read().decode('utf-8'))['result']
+        return result
+    except request.HTTPError as e:
+        if e.response.status_code == 429:
+          print("Сервер вернул ошибку 429: слишком много запросов")
+          raise e  # повторяем попытку выполнения запроса
+        else:
+          raise  # пробрасываем ошибку дальше
 
-
+@retry(stop_max_attempt_number=5, wait_fixed=5000)
 def get_sales_month__last():    
     # укажите требуемые данные для создания товара в виде словаря
     request_data = {
@@ -158,11 +182,18 @@ def get_sales_month__last():
     }
 
     data = json.dumps(request_data).encode('utf-8')
-    req = request.Request(url, headers=headers, data=data, method="POST")
-    r = request.urlopen(req)
-    # получите ответ в формате json
-    result = json.loads(r.read().decode('utf-8'))['result']
-    return result
+    try:
+        req = request.Request(url, headers=headers, data=data, method="POST")
+        r = request.urlopen(req)
+        # получите ответ в формате json
+        result = json.loads(r.read().decode('utf-8'))['result']
+        return result
+    except request.HTTPError as e:
+        if e.response.status_code == 429:
+          print("Сервер вернул ошибку 429: слишком много запросов")
+          raise e  # повторяем попытку выполнения запроса
+        else:
+          raise  # пробрасываем ошибку дальше
 
 
 def find_object_by_id(data, list):
