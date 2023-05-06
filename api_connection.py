@@ -15,23 +15,6 @@ SELLER = os.environ.get('CLIENT_ID')
 KEY = os.environ.get('API_KEY')
 
 
-last_month = datetime.today().month -1
-if last_month < 1:
-    last_month = 12
-else:
-    last_month = last_month
-
-today = datetime.now().date()
-today_of_prev_month = datetime.today().replace(month= last_month)
-first_day = datetime.now().date().replace(day=1)
-last_day_of_prev_month = datetime.today().replace(day=1) - timedelta(days=1)
-start_day_of_prev_month = datetime.today().replace(day=1) - timedelta(days=last_day_of_prev_month.day)
-if today.day > last_day_of_prev_month.day:
-    today_of_prev_month = last_day_of_prev_month
-else:
-    today_of_prev_month = today_of_prev_month
-
-
 url = "https://api-seller.ozon.ru/v1/analytics/data"
     # укажите заголовки запроса
 headers = {
@@ -43,6 +26,8 @@ headers = {
 
 @retry(stop_max_attempt_number=5, wait_fixed=5000)
 def get_sales_month():    
+    today = datetime.now().date()
+    first_day = datetime.now().date().replace(day=1)
     # укажите требуемые данные для создания товара в виде словаря
     request_data = {
     "date_from": str(first_day),
@@ -82,6 +67,7 @@ def get_sales_month():
 
 @retry(stop_max_attempt_number=5, wait_fixed=5000)
 def get_sales_today():
+    today = datetime.now().date()
     request_data = {
         "date_from": str(today),
         "date_to": str(today),
@@ -119,6 +105,12 @@ def get_sales_today():
 
 @retry(stop_max_attempt_number=5, wait_fixed=5000)
 def get_sales_today__last():
+    last_month = datetime.today().month -1
+    if last_month < 1:
+        last_month = 12
+    else:
+        last_month = last_month
+    today_of_prev_month = datetime.today().replace(month= last_month)
     # укажите требуемые данные для создания товара в виде словаря
     request_data = {
     "date_from": str(today_of_prev_month),
@@ -158,6 +150,14 @@ def get_sales_today__last():
 
 @retry(stop_max_attempt_number=5, wait_fixed=5000)
 def get_sales_month__last():    
+    last_month = datetime.today().month -1
+    if last_month < 1:
+        last_month = 12
+    else:
+        last_month = last_month
+    today_of_prev_month = datetime.today().replace(month= last_month)
+    last_day_of_prev_month = datetime.today().replace(day=1) - timedelta(days=1)
+    start_day_of_prev_month = datetime.today().replace(day=1) - timedelta(days=last_day_of_prev_month.day)
     # укажите требуемые данные для создания товара в виде словаря
     request_data = {
     "date_from": str(start_day_of_prev_month),

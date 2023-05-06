@@ -52,11 +52,11 @@ async def send_statistic(bot: Bot):
         ids = []
         for item in data:
             ids.append(item['dimensions'][0]['id'])
-        sleep(5)
+        sleep(1)
         results_day = api_connection.find_object_by_id(api_connection.get_sales_today()['data'], ids)
-        sleep(5)
+        sleep(1)
         results_day_pm = api_connection.find_object_by_id(api_connection.get_sales_today__last()['data'], ids)
-        sleep(5)
+        sleep(1)
         results_month_pm = api_connection.find_object_by_id(api_connection.get_sales_month__last()['data'], ids)
 
         top_sales = ""
@@ -120,11 +120,11 @@ async def statistic_handler(message: types.Message):
             ids = []
             for item in data:
                 ids.append(item['dimensions'][0]['id'])
-            sleep(5)
+            sleep(1)
             results_day = api_connection.find_object_by_id(api_connection.get_sales_today()['data'], ids)
-            sleep(5)
+            sleep(1)
             results_day_pm = api_connection.find_object_by_id(api_connection.get_sales_today__last()['data'], ids)
-            sleep(5)
+            sleep(1)
             results_month_pm = api_connection.find_object_by_id(api_connection.get_sales_month__last()['data'], ids)
 
             top_sales = ""
