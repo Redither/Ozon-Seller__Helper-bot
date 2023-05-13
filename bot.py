@@ -1,9 +1,6 @@
-import time
-import logging
 import re
 import os
 from datetime import datetime
-# import calendar
 import db_connection
 import api_connection
 
@@ -23,7 +20,6 @@ USER = os.environ.get('USER_ID')
 CHAT = os.environ.get('CHAT_ID')
 MESSAGE_TIME = os.environ.get('MESSAGE_TIME')
 time_h, time_m = MESSAGE_TIME.split(':')
-# PARAM_TIME = db_connection.get_setting_value('time')
 
 bot = Bot(token=TOKEN)
 dp = Dispatcher(bot=bot)
